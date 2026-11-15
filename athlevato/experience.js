@@ -56,13 +56,39 @@ stage.addEventListener('pointermove', event => {
 stage.addEventListener('pointerleave', resetTilt);
 reducedMotion.addEventListener('change', resetTilt);
 const dialog = document.getElementById('profile-dialog');
-const openProfile = document.querySelector('[data-open-profile]');
-openProfile.hidden = false;
+const profileOpeners = [...document.querySelectorAll('[data-open-profile]')];
+const profiles = {
+ mara: {
+  name: 'Mara',
+  image: 'assets/mara-daylight.webp',
+  alt: 'Fiktive KI-Athletin Mara in salbeigrüner Sportkleidung, vollständig abgebildet.',
+  line: 'Sportlicher Ausdruck. Ein eigener Blick.'
+ },
+ noah: {
+  name: 'Noah',
+  image: 'assets/noah-daylight.webp',
+  alt: 'Fiktiver KI-Athlet Noah im blauen Sportshirt und hellen Shorts, vollständig abgebildet.',
+  line: 'Kraft in Bewegung. Persönlichkeit im Auftritt.'
+ }
+};
+let lastProfileOpener;
 let previousOverflow;
-openProfile.addEventListener('click', () => {
- previousOverflow = document.body.style.overflow;
- dialog.showModal();
- document.body.style.overflow = 'hidden';
+profileOpeners.forEach(opener => {
+ opener.hidden = false;
+ opener.addEventListener('click', () => {
+  lastProfileOpener = opener;
+  const activeProfile = profiles[opener.dataset.openProfile];
+  document.getElementById('profile-title').textContent = `${activeProfile.name}.`;
+  document.getElementById('profile-disclaimer').textContent = `${activeProfile.name} existiert nicht und ist nicht buchbar. Es werden keine realen Qualifikationen oder Referenzen behauptet.`;
+  const image = document.getElementById('profile-image');
+  image.src = activeProfile.image;
+  image.alt = activeProfile.alt;
+  document.getElementById('profile-line').textContent = activeProfile.line;
+  dialog.scrollTop = 0;
+  previousOverflow = document.body.style.overflow;
+  dialog.showModal();
+  document.body.style.overflow = 'hidden';
+ });
 });
 dialog.querySelector('.dialog-close').addEventListener('click', () => dialog.close());
 dialog.addEventListener('click', event => {
@@ -72,15 +98,5 @@ dialog.addEventListener('click', event => {
 });
 dialog.addEventListener('close', () => {
  document.body.style.overflow = previousOverflow || '';
- openProfile.focus({preventScroll:true});
-});
-dialog.querySelectorAll('[data-picture]').forEach(button => {
- button.addEventListener('click', () => {
-  const motion = button.dataset.picture === 'motion';
-  const img = document.getElementById('profile-image');
-  img.src = `assets/athlete-${motion ? 'motion' : 'portrait'}.webp`;
-  img.alt = motion ? 'KI-generiertes Beispiel: die fiktive Mara beim Laufen.' : 'KI-generiertes Porträt der fiktiven Mara.';
-  img.classList.toggle('motion', motion);
-  dialog.querySelectorAll('[data-picture]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
- });
+ lastProfileOpener?.focus({preventScroll:true});
 });
